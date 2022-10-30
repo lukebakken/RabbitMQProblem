@@ -88,33 +88,33 @@ class Program
         int messages = 10000;
         var factory = new ConnectionFactory
         {
-            HostName = "localhost"
+            HostName = "shostakovich"
         };
 
-        const string certPath = "/rabbitmq-client-cert/tls.crt";
-        const string keyPath = "/rabbitmq-client-cert/tls.key";
+        const string certPath = "./certs/client_shostakovich_certificate.pem";
+        const string keyPath = "./certs/client_shostakovich_key.pem";
         // const string certPath = "tls.crt";
         // const string keyPath = "tls.key";
         if (File.Exists(certPath) && File.Exists(keyPath))
         {
-            var cert = X509Certificate2.CreateFromPem(
-                File.ReadAllText(certPath), File.ReadAllText(keyPath));
+            var cert = X509Certificate2.CreateFromPem(File.ReadAllText(certPath), File.ReadAllText(keyPath));
             var certs = new X509CertificateCollection { cert };
             factory.AuthMechanisms = new IAuthMechanismFactory[] { new ExternalMechanismFactory() };
-            factory.HostName = "hoppy.rabbitmq.svc.cluster.local";
+            factory.HostName = "shostakovich";
             factory.Port = 5671;
             factory.Ssl = new SslOption
             {
                 Certs = certs,
                 Enabled = true,
                 ServerName = factory.HostName,
+                /*
                 CertificateValidationCallback = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
                 {
                     return true;
                 }
+                */
             };
-//            factory.HostName = "localhost";
-            factory.VirtualHost = "dev";
+            factory.VirtualHost = "/";
         };
 
         int tc = Environment.TickCount;
