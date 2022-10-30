@@ -1,3 +1,5 @@
 bin/
 obj/
+rabbitmq_server-3.11.2/
 rabbitmq.conf
+*.tar.xz
