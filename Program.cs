@@ -85,37 +85,32 @@ class Program
 
     public async static Task TryMain()
     {
-        int messages = 10000;
+        const int messages = 10000;
+
         var factory = new ConnectionFactory
         {
+            // UserName = "guest",
+            // Password = "guest",
             HostName = "shostakovich"
         };
 
-        const string certPath = "./certs/client_shostakovich_certificate.pem";
-        const string keyPath = "./certs/client_shostakovich_key.pem";
-        // const string certPath = "tls.crt";
-        // const string keyPath = "tls.key";
-        if (File.Exists(certPath) && File.Exists(keyPath))
+        Console.WriteLine("[INFO] using client cert auth");
+        var certs = new X509CertificateCollection();
+        certs.Add(CertHelper.GetCertificate());
+        factory.AuthMechanisms = new IAuthMechanismFactory[] { new ExternalMechanismFactory() };
+        factory.HostName = "shostakovich";
+        factory.Port = 5671;
+        factory.Ssl = new SslOption
         {
-            var cert = X509Certificate2.CreateFromPem(File.ReadAllText(certPath), File.ReadAllText(keyPath));
-            var certs = new X509CertificateCollection { cert };
-            factory.AuthMechanisms = new IAuthMechanismFactory[] { new ExternalMechanismFactory() };
-            factory.HostName = "shostakovich";
-            factory.Port = 5671;
-            factory.Ssl = new SslOption
+            Certs = certs,
+            Enabled = true,
+            ServerName = factory.HostName,
+            CertificateValidationCallback = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
             {
-                Certs = certs,
-                Enabled = true,
-                ServerName = factory.HostName,
-                /*
-                CertificateValidationCallback = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
-                {
-                    return true;
-                }
-                */
-            };
-            factory.VirtualHost = "/";
+                return true;
+            }
         };
+        factory.VirtualHost = "/";
 
         int tc = Environment.TickCount;
 
